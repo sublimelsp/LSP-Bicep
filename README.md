@@ -22,4 +22,4 @@ Like any helper package, installation starts when you open a view that is suitab
 
 ## Configuration
 
-_Optionally_ configure Bicep.LangServer by accessing `Preferences > Package Settings > LSP > Servers > LSP-Bicep`. However, by default things should work out of the box.
+_Optionally_ configure Bicep.LangServer by running `Preferences: LSP-Bicep Settings` from the Command Palette. However, by default things should work out of the box.
