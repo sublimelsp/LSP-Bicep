@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Preferences: LSP-Bicep Settings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/LSP-Bicep/LSP-Bicep.sublime-settings",
+            "default": "// Settings in here override those in \"LSP-Bicep/LSP-Bicep.sublime-settings\"\n{\n\t$0\n}\n"
+        }
+    }
+]
