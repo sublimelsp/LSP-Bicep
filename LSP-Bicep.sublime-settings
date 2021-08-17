@@ -8,5 +8,8 @@
 	"command": ["${dotnet_executable}", "${storage_path}/LSP-Bicep/Bicep.LangServer.dll"],
 
 	// We start this language server when we open a bicep file.
-	"selector": "source.bicep"
+	"selector": "source.bicep",
+
+	// We attach to files backed on disk and to in-memory buffers.
+	"schemes": ["file", "buffer"]
 }
