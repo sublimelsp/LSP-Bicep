@@ -10,9 +10,8 @@ from LSP.plugin.core.typing import Optional, Dict
 import sublime
 
 
-VERSION = "v0.4.451"
+VERSION = "v0.36.1"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"  # noqa: E501
-
 
 class Bicep(AbstractPlugin):
     @classmethod
