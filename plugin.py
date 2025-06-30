@@ -13,6 +13,7 @@ import sublime
 VERSION = "v0.36.1"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"  # noqa: E501
 
+
 class Bicep(AbstractPlugin):
     @classmethod
     def name(cls) -> str:
