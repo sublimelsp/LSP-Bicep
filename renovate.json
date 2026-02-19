@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>sublimelsp/renovate-preset"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Azure Bicep language server version in plugin.py",
+      "managerFilePatterns": ["(^|/)plugin\\.py$"],
+      "matchStrings": [
+        "VERSION = \"(?<currentValue>v[\\d.]+)\""
+      ],
+      "depNameTemplate": "Azure/bicep",
+      "datasourceTemplate": "github-releases"
+    }
   ]
 }
