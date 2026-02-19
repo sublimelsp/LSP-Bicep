@@ -1,0 +1,14 @@
+LSP-Bicep 2.0.0
+
+BREAKING CHANGE: .NET 10 now required
+
+Bicep language server v0.40.2 has migrated to .NET 10. You must upgrade your
+.NET SDK from v8 to v10 for the language server to start.
+
+On macOS with Homebrew:
+
+    brew uninstall dotnet@8
+    brew install dotnet
+
+See the README for more details:
+https://github.com/rgant/LSP-Bicep#installing-net

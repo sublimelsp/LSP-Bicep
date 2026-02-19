@@ -7,7 +7,7 @@ To use this package, you must have:
 
 - The [Bicep syntax](https://packagecontrol.io/packages/Bicep) package.
 - The [LSP](https://packagecontrol.io/packages/LSP) package.
-- The [.NET SDK](https://dotnet.microsoft.com/download). **Required version is v8**.
+- The [.NET SDK](https://dotnet.microsoft.com/download). **Required version is v10**.
 - Either make sure that the `dotnet` executable is in your $PATH, or configure
   the path to the `dotnet` executable via the package settings (see below).
 
@@ -33,7 +33,8 @@ from the Command Palette. However, by default things should work out of the box.
 
 ## Installing .NET
 
-On MacOS you can use [Homebrew](https://brew.sh/) to install [`dotnet` v8](https://formulae.brew.sh/formula/dotnet@8).
+On MacOS you can use [Homebrew](https://brew.sh/) to install
+[`dotnet`](https://formulae.brew.sh/formula/dotnet) v10.
 
 Be sure to follow the after installation caveats for this formula to add it to
 your `$PATH`.
