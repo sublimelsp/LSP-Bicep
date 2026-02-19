@@ -12,8 +12,7 @@
         "VERSION = \"(?<currentValue>v[\\d.]+)\""
       ],
       "depNameTemplate": "Azure/bicep",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.*)$"
+      "datasourceTemplate": "github-releases"
     }
   ]
 }
