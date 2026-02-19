@@ -1,7 +1,7 @@
 {
 	// Set to the path to the `dotnet` executable if it's not in your $PATH.
 	// Otherwise, leave at `null`.
-	// Must be at least v5.
+	// Must be at least v10.
 	"dotnet_executable": null,
 
 	// The command we will execute to start the language server subprocess.
