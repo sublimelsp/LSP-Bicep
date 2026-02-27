@@ -20,9 +20,11 @@ correctly in Sublime Text:
 2. Restart Sublime Text (or run `LSP: Restart All Servers`).
 3. Open a `.bicep` file and confirm the server starts without errors.
 4. Introduce a deliberate error to verify diagnostics are working, for example:
+
    ```bicep
    output test string = nonExistentVariable
    ```
+
    You should see an error diagnostic on `nonExistentVariable`.
 5. Remove the test error.
 
@@ -75,6 +77,7 @@ requirement), additional files need updating before merging.
    - Create `messages/<version>.txt` with the upgrade notice. See
      `messages/2.0.0.txt` for an example.
    - Add an entry to `messages.json` mapping the version to the new file:
+
      ```json
      {
        "2.0.0": "messages/2.0.0.txt",
