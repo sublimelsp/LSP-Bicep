@@ -35,7 +35,7 @@ for the new version. Look for:
 
 - Changes to the .NET SDK version requirement.
 - Breaking changes in language server behavior.
-- Deprecations or removed features.
+- Deprecations, removed or added features.
 
 ### 3. Merge the PR
 
@@ -52,12 +52,10 @@ Choose the new plugin version number:
 - **Major** (e.g., v2.1.0 -> v3.0.0): Breaking changes (e.g., new .NET SDK
   version required).
 
-Create the release on the upstream repo:
+Create the release:
 
 ```sh
-gh release create vX.Y.Z --repo sublimelsp/LSP-Bicep \
-  --title "vX.Y.Z" \
-  --notes "Update Bicep language server to vA.B.C"
+gh release create vX.Y.Z --repo sublimelsp/LSP-Bicep --generate-notes
 ```
 
 Package Control picks up new releases automatically from the tag.
@@ -71,7 +69,7 @@ requirement), additional files need updating before merging.
 
 1. **Update documentation** if the .NET version requirement changes:
    - `README.md` — update the required .NET SDK version.
-   - `LSP-Bicep.sublime-settings` — update the version comment.
+   - `LSP-Bicep.sublime-settings` — update the minimum version comment.
 
 2. **Add an upgrade message** so users see a notice in Sublime Text:
    - Create `messages/<version>.txt` with the upgrade notice. See
