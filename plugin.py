@@ -1,17 +1,16 @@
-from urllib.request import urlretrieve
-from zipfile import ZipFile
-import os
-import shutil
+from __future__ import annotations
 
 from LSP.plugin import AbstractPlugin
 from LSP.plugin import register_plugin
 from LSP.plugin import unregister_plugin
-from LSP.plugin.core.typing import Optional, Dict
+from urllib.request import urlretrieve
+from zipfile import ZipFile
+import os
+import shutil
 import sublime
 
-
 VERSION = "v0.41.2"
-URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"  # noqa: E501
+URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"
 
 
 class Bicep(AbstractPlugin):
@@ -20,7 +19,7 @@ class Bicep(AbstractPlugin):
         return cls.__name__
 
     @classmethod
-    def additional_variables(cls) -> Optional[Dict[str, str]]:
+    def additional_variables(cls) -> dict[str, str] | None:
         filename = "LSP-{}.sublime-settings".format(cls.name())
         settings = sublime.load_settings(filename)
         dotnet_executable = settings.get("dotnet_executable")
