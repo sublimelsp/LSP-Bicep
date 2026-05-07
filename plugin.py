@@ -9,7 +9,7 @@ import os
 import shutil
 import sublime
 
-VERSION = "v0.41.2"
+VERSION = "v0.43.8"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"
 
 
