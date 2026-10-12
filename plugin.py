@@ -1,41 +1,37 @@
 from __future__ import annotations
 
-from LSP.plugin import AbstractPlugin
-from LSP.plugin import register_plugin
-from LSP.plugin import unregister_plugin
+from LSP.plugin import LspPlugin
+from LSP.plugin import OnPreStartContext
+from LSP.plugin import PluginStartError
+from typing import final
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 import os
+import re
 import shutil
 import sublime
+import subprocess
 
 VERSION = "v0.48.1"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"
+DOTNET_MIN_MAJOR = 10
 
 
-class Bicep(AbstractPlugin):
+@final
+class Bicep(LspPlugin):
     @classmethod
-    def name(cls) -> str:
-        return cls.__name__
-
-    @classmethod
-    def additional_variables(cls) -> dict[str, str] | None:
-        filename = "LSP-{}.sublime-settings".format(cls.name())
-        settings = sublime.load_settings(filename)
-        dotnet_executable = settings.get("dotnet_executable")
-        if not dotnet_executable:
-            dotnet_executable = "dotnet"
-        return {"dotnet_executable": dotnet_executable}
+    def dotnet_executable(cls) -> str:
+        settings = sublime.load_settings("{}.sublime-settings".format(cls.name))
+        return settings.get("dotnet_executable") or "dotnet"
 
     @classmethod
     def installed_version_str(cls) -> str:
-        filename = os.path.join(cls.basedir(), "VERSION")
-        with open(filename, "r") as f:
+        with open(os.path.join(cls.basedir(), "VERSION"), "r") as f:
             return f.readline().strip()
 
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), "LSP-{}".format(cls.name()))
+        return str(cls.plugin_storage_path)
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -62,10 +58,58 @@ class Bicep(AbstractPlugin):
             shutil.rmtree(cls.basedir(), ignore_errors=True)
             raise
 
+    @classmethod
+    def check_dotnet(cls) -> str:
+        """Return the dotnet executable to use. Raise PluginStartError when it is missing or too old."""
+        dotnet = cls.dotnet_executable()
+        resolved = shutil.which(dotnet)
+        if not resolved:
+            raise PluginStartError(
+                'dotnet not found. Install .NET {} or set "dotnet_executable" in the LSP-Bicep settings.'.format(
+                    DOTNET_MIN_MAJOR
+                )
+            )
+        try:
+            result = subprocess.run(
+                [resolved, "--list-runtimes"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                universal_newlines=True,
+                timeout=15,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        except Exception:
+            return dotnet  # Could not ask. Let the server try to start.
+        if result.returncode != 0:
+            return dotnet
+        runtimes = re.finditer(r"^Microsoft\.NETCore\.App (\d+)\.", result.stdout, re.MULTILINE)
+        majors = [int(m.group(1)) for m in runtimes]
+        if not majors:
+            raise PluginStartError(
+                'No .NET runtime found by "dotnet --list-runtimes". Install .NET {}.'.format(DOTNET_MIN_MAJOR)
+            )
+        if max(majors) < DOTNET_MIN_MAJOR:
+            raise PluginStartError(
+                ".NET runtime {} found, but Bicep needs {} or newer. Install .NET {}.".format(
+                    max(majors), DOTNET_MIN_MAJOR, DOTNET_MIN_MAJOR
+                )
+            )
+        return dotnet
+
+    @classmethod
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        # Check dotnet first, so that a missing or old .NET is reported before the 65 MB server is downloaded.
+        context.variables["dotnet_executable"] = cls.check_dotnet()
+        if cls.needs_update_or_installation():
+            try:
+                cls.install_or_update()
+            except Exception as ex:
+                raise PluginStartError("Failed to install the Bicep language server: {}".format(ex))
+
 
 def plugin_loaded() -> None:
-    register_plugin(Bicep)
+    Bicep.register()
 
 
 def plugin_unloaded() -> None:
-    unregister_plugin(Bicep)
+    Bicep.unregister()
