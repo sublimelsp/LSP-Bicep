@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from LSP.plugin import ClientConfig
 from LSP.plugin import LspPlugin
 from LSP.plugin import OnPreStartContext
 from LSP.plugin import PluginStartError
@@ -9,7 +10,6 @@ from zipfile import ZipFile
 import os
 import re
 import shutil
-import sublime
 import subprocess
 
 VERSION = "v0.48.1"
@@ -19,11 +19,6 @@ DOTNET_MIN_MAJOR = 10
 
 @final
 class Bicep(LspPlugin):
-    @classmethod
-    def dotnet_executable(cls) -> str:
-        settings = sublime.load_settings("{}.sublime-settings".format(cls.name))
-        return settings.get("dotnet_executable") or "dotnet"
-
     @classmethod
     def installed_version_str(cls) -> str:
         with open(os.path.join(cls.basedir(), "VERSION"), "r") as f:
@@ -59,9 +54,9 @@ class Bicep(LspPlugin):
             raise
 
     @classmethod
-    def check_dotnet(cls) -> str:
+    def check_dotnet(cls, configuration: ClientConfig) -> str:
         """Return the dotnet executable to use. Raise PluginStartError when it is missing or too old."""
-        dotnet = cls.dotnet_executable()
+        dotnet = configuration.root_settings.get("dotnet_executable") or "dotnet"
         resolved = shutil.which(dotnet)
         if not resolved:
             raise PluginStartError(
@@ -99,7 +94,7 @@ class Bicep(LspPlugin):
     @classmethod
     def on_pre_start_async(cls, context: OnPreStartContext) -> None:
         # Check dotnet first, so that a missing or old .NET is reported before the 65 MB server is downloaded.
-        context.variables["dotnet_executable"] = cls.check_dotnet()
+        context.variables["dotnet_executable"] = cls.check_dotnet(context.configuration)
         if cls.needs_update_or_installation():
             try:
                 cls.install_or_update()
