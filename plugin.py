@@ -1,41 +1,34 @@
 from __future__ import annotations
 
-from LSP.plugin import AbstractPlugin
-from LSP.plugin import register_plugin
-from LSP.plugin import unregister_plugin
+from LSP.plugin import ClientConfig
+from LSP.plugin import LspPlugin
+from LSP.plugin import OnPreStartContext
+from LSP.plugin import PluginStartError
+from typing import final
+from typing_extensions import override
 from urllib.request import urlretrieve
 from zipfile import ZipFile
-import os
+import re
 import shutil
-import sublime
+import subprocess
 
 VERSION = "v0.48.1"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"
+DOTNET_MIN_MAJOR = 10
 
 
-class Bicep(AbstractPlugin):
+@final
+class Bicep(LspPlugin):
     @classmethod
-    def name(cls) -> str:
-        return cls.__name__
-
-    @classmethod
-    def additional_variables(cls) -> dict[str, str] | None:
-        filename = "LSP-{}.sublime-settings".format(cls.name())
-        settings = sublime.load_settings(filename)
-        dotnet_executable = settings.get("dotnet_executable")
-        if not dotnet_executable:
-            dotnet_executable = "dotnet"
-        return {"dotnet_executable": dotnet_executable}
-
-    @classmethod
-    def installed_version_str(cls) -> str:
-        filename = os.path.join(cls.basedir(), "VERSION")
-        with open(filename, "r") as f:
-            return f.readline().strip()
-
-    @classmethod
-    def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), "LSP-{}".format(cls.name()))
+    @override
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        # Check dotnet first, so that a missing or old .NET is reported before the 65 MB server is downloaded.
+        context.variables["dotnet_executable"] = cls.check_dotnet(context.configuration)
+        if cls.needs_update_or_installation():
+            try:
+                cls.install_or_update()
+            except Exception as ex:
+                raise PluginStartError(f"Failed to install the Bicep language server: {ex}")
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -47,25 +40,66 @@ class Bicep(AbstractPlugin):
         return True
 
     @classmethod
+    def installed_version_str(cls) -> str:
+        with (cls.plugin_storage_path / "VERSION").open("r") as f:
+            return f.readline().strip()
+
+    @classmethod
     def install_or_update(cls) -> None:
-        shutil.rmtree(cls.basedir(), ignore_errors=True)
-        os.makedirs(cls.basedir(), exist_ok=True)
-        zipfile = os.path.join(cls.basedir(), "biceplangserver.zip")
+        basedir = cls.plugin_storage_path
+        shutil.rmtree(basedir, ignore_errors=True)
+        basedir.mkdir(parents=True, exist_ok=True)
+        zipfile = basedir / "biceplangserver.zip"
         try:
             urlretrieve(URL.format(VERSION), zipfile)
             with ZipFile(zipfile, "r") as f:
-                f.extractall(cls.basedir())
-            os.unlink(zipfile)
-            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
-                fp.write(VERSION)
+                f.extractall(basedir)
+            zipfile.unlink()
+            (basedir / "VERSION").write_text(VERSION)
         except Exception:
-            shutil.rmtree(cls.basedir(), ignore_errors=True)
+            shutil.rmtree(basedir, ignore_errors=True)
             raise
+
+    @classmethod
+    def check_dotnet(cls, configuration: ClientConfig) -> str:
+        """Return the dotnet executable to use. Raise PluginStartError when it is missing or too old."""
+        dotnet = configuration.root_settings.get("dotnet_executable") or "dotnet"
+        resolved = shutil.which(dotnet)
+        if not resolved:
+            raise PluginStartError(
+                f"dotnet not found. Install .NET {DOTNET_MIN_MAJOR} "
+                'or set "dotnet_executable" in the LSP-Bicep settings.'
+            )
+        try:
+            result = subprocess.run(
+                [resolved, "--list-runtimes"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=15,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        except Exception:
+            return dotnet  # Could not ask. Let the server try to start.
+        if result.returncode != 0:
+            return dotnet
+        runtimes = re.finditer(r"^Microsoft\.NETCore\.App (\d+)\.", result.stdout, re.MULTILINE)
+        majors = [int(m.group(1)) for m in runtimes]
+        if not majors:
+            raise PluginStartError(
+                f'No .NET runtime found by "dotnet --list-runtimes". Install .NET {DOTNET_MIN_MAJOR}.'
+            )
+        if max(majors) < DOTNET_MIN_MAJOR:
+            raise PluginStartError(
+                f".NET runtime {max(majors)} found, but Bicep needs {DOTNET_MIN_MAJOR} or newer. "
+                f"Install .NET {DOTNET_MIN_MAJOR}."
+            )
+        return dotnet
 
 
 def plugin_loaded() -> None:
-    register_plugin(Bicep)
+    Bicep.register()
 
 
 def plugin_unloaded() -> None:
-    unregister_plugin(Bicep)
+    Bicep.unregister()

@@ -10,6 +10,8 @@ To use this package, you must have:
 - The [.NET SDK](https://dotnet.microsoft.com/download). **Required version is v10**.
 - Either make sure that the `dotnet` executable is in your $PATH, or configure
   the path to the `dotnet` executable via the package settings (see below).
+  If `dotnet` cannot be found, or its runtime is older than v10, the status bar says so when you open a
+  Bicep file, before the language server is downloaded.
 
 ## Applicable Selectors
 
