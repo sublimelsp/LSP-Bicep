@@ -10,6 +10,7 @@ target-version = "py38"
 # Enable preview rules.
 preview = true
 select = [
+  "E501",
   "F401",
   "I",
   "UP",

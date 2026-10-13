@@ -19,7 +19,6 @@ DOTNET_MIN_MAJOR = 10
 
 @final
 class Bicep(LspPlugin):
-
     @classmethod
     @override
     def on_pre_start_async(cls, context: OnPreStartContext) -> None:
@@ -68,7 +67,8 @@ class Bicep(LspPlugin):
         resolved = shutil.which(dotnet)
         if not resolved:
             raise PluginStartError(
-                f'dotnet not found. Install .NET {DOTNET_MIN_MAJOR} or set "dotnet_executable" in the LSP-Bicep settings.'
+                f"dotnet not found. Install .NET {DOTNET_MIN_MAJOR} "
+                'or set "dotnet_executable" in the LSP-Bicep settings.'
             )
         try:
             result = subprocess.run(
@@ -91,7 +91,8 @@ class Bicep(LspPlugin):
             )
         if max(majors) < DOTNET_MIN_MAJOR:
             raise PluginStartError(
-                f".NET runtime {max(majors)} found, but Bicep needs {DOTNET_MIN_MAJOR} or newer. Install .NET {DOTNET_MIN_MAJOR}."
+                f".NET runtime {max(majors)} found, but Bicep needs {DOTNET_MIN_MAJOR} or newer. "
+                f"Install .NET {DOTNET_MIN_MAJOR}."
             )
         return dotnet
 
