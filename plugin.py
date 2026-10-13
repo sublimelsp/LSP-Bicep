@@ -29,7 +29,7 @@ class Bicep(LspPlugin):
             try:
                 cls.install_or_update()
             except Exception as ex:
-                raise PluginStartError("Failed to install the Bicep language server: {}".format(ex))
+                raise PluginStartError(f"Failed to install the Bicep language server: {ex}")
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -68,16 +68,14 @@ class Bicep(LspPlugin):
         resolved = shutil.which(dotnet)
         if not resolved:
             raise PluginStartError(
-                'dotnet not found. Install .NET {} or set "dotnet_executable" in the LSP-Bicep settings.'.format(
-                    DOTNET_MIN_MAJOR
-                )
+                f'dotnet not found. Install .NET {DOTNET_MIN_MAJOR} or set "dotnet_executable" in the LSP-Bicep settings.'
             )
         try:
             result = subprocess.run(
                 [resolved, "--list-runtimes"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
-                universal_newlines=True,
+                text=True,
                 timeout=15,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
@@ -89,13 +87,11 @@ class Bicep(LspPlugin):
         majors = [int(m.group(1)) for m in runtimes]
         if not majors:
             raise PluginStartError(
-                'No .NET runtime found by "dotnet --list-runtimes". Install .NET {}.'.format(DOTNET_MIN_MAJOR)
+                f'No .NET runtime found by "dotnet --list-runtimes". Install .NET {DOTNET_MIN_MAJOR}.'
             )
         if max(majors) < DOTNET_MIN_MAJOR:
             raise PluginStartError(
-                ".NET runtime {} found, but Bicep needs {} or newer. Install .NET {}.".format(
-                    max(majors), DOTNET_MIN_MAJOR, DOTNET_MIN_MAJOR
-                )
+                f".NET runtime {max(majors)} found, but Bicep needs {DOTNET_MIN_MAJOR} or newer. Install .NET {DOTNET_MIN_MAJOR}."
             )
         return dotnet
 
