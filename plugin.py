@@ -7,7 +7,6 @@ from LSP.plugin import PluginStartError
 from typing import final
 from urllib.request import urlretrieve
 from zipfile import ZipFile
-import os
 import re
 import shutil
 import subprocess
@@ -21,12 +20,8 @@ DOTNET_MIN_MAJOR = 10
 class Bicep(LspPlugin):
     @classmethod
     def installed_version_str(cls) -> str:
-        with open(os.path.join(cls.basedir(), "VERSION"), "r") as f:
+        with (cls.plugin_storage_path / "VERSION").open("r") as f:
             return f.readline().strip()
-
-    @classmethod
-    def basedir(cls) -> str:
-        return str(cls.plugin_storage_path)
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -39,18 +34,18 @@ class Bicep(LspPlugin):
 
     @classmethod
     def install_or_update(cls) -> None:
-        shutil.rmtree(cls.basedir(), ignore_errors=True)
-        os.makedirs(cls.basedir(), exist_ok=True)
-        zipfile = os.path.join(cls.basedir(), "biceplangserver.zip")
+        basedir = cls.plugin_storage_path
+        shutil.rmtree(basedir, ignore_errors=True)
+        basedir.mkdir(parents=True, exist_ok=True)
+        zipfile = basedir / "biceplangserver.zip"
         try:
             urlretrieve(URL.format(VERSION), zipfile)
             with ZipFile(zipfile, "r") as f:
-                f.extractall(cls.basedir())
-            os.unlink(zipfile)
-            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
-                fp.write(VERSION)
+                f.extractall(basedir)
+            zipfile.unlink()
+            (basedir / "VERSION").write_text(VERSION)
         except Exception:
-            shutil.rmtree(cls.basedir(), ignore_errors=True)
+            shutil.rmtree(basedir, ignore_errors=True)
             raise
 
     @classmethod
