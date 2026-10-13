@@ -5,6 +5,7 @@ from LSP.plugin import LspPlugin
 from LSP.plugin import OnPreStartContext
 from LSP.plugin import PluginStartError
 from typing import final
+from typing_extensions import override
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 import re
@@ -18,10 +19,17 @@ DOTNET_MIN_MAJOR = 10
 
 @final
 class Bicep(LspPlugin):
+
     @classmethod
-    def installed_version_str(cls) -> str:
-        with (cls.plugin_storage_path / "VERSION").open("r") as f:
-            return f.readline().strip()
+    @override
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        # Check dotnet first, so that a missing or old .NET is reported before the 65 MB server is downloaded.
+        context.variables["dotnet_executable"] = cls.check_dotnet(context.configuration)
+        if cls.needs_update_or_installation():
+            try:
+                cls.install_or_update()
+            except Exception as ex:
+                raise PluginStartError("Failed to install the Bicep language server: {}".format(ex))
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -31,6 +39,11 @@ class Bicep(LspPlugin):
         except Exception:
             pass
         return True
+
+    @classmethod
+    def installed_version_str(cls) -> str:
+        with (cls.plugin_storage_path / "VERSION").open("r") as f:
+            return f.readline().strip()
 
     @classmethod
     def install_or_update(cls) -> None:
@@ -85,16 +98,6 @@ class Bicep(LspPlugin):
                 )
             )
         return dotnet
-
-    @classmethod
-    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
-        # Check dotnet first, so that a missing or old .NET is reported before the 65 MB server is downloaded.
-        context.variables["dotnet_executable"] = cls.check_dotnet(context.configuration)
-        if cls.needs_update_or_installation():
-            try:
-                cls.install_or_update()
-            except Exception as ex:
-                raise PluginStartError("Failed to install the Bicep language server: {}".format(ex))
 
 
 def plugin_loaded() -> None:
