@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sublimelsp/lsp_smoke_test/v1/smoke.schema.json
+file: main.bicep
+# BCP057: The name "missingName" does not exist in the current context.
+expected_diagnostics:
+  source: bicep
+  code: BCP057
+  severity: 1
