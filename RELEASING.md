@@ -4,16 +4,28 @@
 
 [Renovate](https://docs.renovatebot.com/) monitors the
 [Azure/bicep](https://github.com/Azure/bicep) GitHub releases and opens a PR
-when a new version is available. The PR updates the `VERSION` variable in
-`plugin.py`, which controls which language server binary the plugin downloads.
+when a new version is available, once it's 3 days old. The PR updates the
+`VERSION` variable in `plugin.py`, which controls which language server binary
+the plugin downloads.
+
+Renovate automerges patch updates once the smoke test passes. Bicep is still
+0.x, so minor updates (e.g., v0.41.2 -> v0.42.0) need a manual merge.
+
+Every merge to `main` runs the [release workflow](https://github.com/sublimelsp/lsp_release_workflow),
+which releases according to the [conventional commits](https://www.conventionalcommits.org/)
+since the latest tag: `feat` makes a minor release, and `fix`, `perf` and
+`revert` make a patch release. Renovate's commits are `fix(deps): ...`, so each
+language server update makes a patch release.
 
 ## Routine release (language server update only)
 
-Most Renovate PRs are routine version bumps with no breaking changes.
+Most Renovate PRs are routine version bumps with no breaking changes. Patch
+updates are merged and released automatically. For a minor update:
 
 ### 1. Verify the update works
 
-Before merging, check that the new language server version starts and lints
+The smoke test checks that the server starts and reports diagnostics on all
+platforms. To also check that the new language server version starts and lints
 correctly in Sublime Text:
 
 1. Check out the Renovate branch locally.
@@ -39,26 +51,13 @@ for the new version. Look for:
 
 ### 3. Merge the PR
 
-Merge the Renovate PR on GitHub.
+Merge the Renovate PR on GitHub. The release workflow then makes a patch
+release, and Package Control picks it up from the tag.
 
-### 4. Create a release
-
-Choose the new plugin version number:
-
-- **Patch** (e.g., v2.0.0 -> v2.0.1): Routine language server update, no
-  breaking changes.
-- **Minor** (e.g., v2.0.1 -> v2.1.0): New language server features worth
-  highlighting, but no breaking changes.
-- **Major** (e.g., v2.1.0 -> v3.0.0): Breaking changes (e.g., new .NET SDK
-  version required).
-
-Create the release:
-
-```sh
-gh release create vX.Y.Z --repo sublimelsp/LSP-Bicep --generate-notes
-```
-
-Package Control picks up new releases automatically from the tag.
+To release a minor or major version instead, merge the PR with a commit
+message that needs one, such as `feat: ...` for a minor release, or run the
+[release workflow](../../actions/workflows/release.yml) manually with the
+`bump` input.
 
 ## Breaking change release
 
@@ -83,8 +82,9 @@ requirement), additional files need updating before merging.
      }
      ```
 
-3. Commit these changes to the Renovate PR branch (or as a follow-up commit on
-   `main`) before tagging the release.
+3. Commit these changes to the Renovate PR branch before merging it. A new
+   version in `messages.json` makes the release workflow release that version,
+   with the message as the release notes.
 
 ## Version numbering
 
@@ -95,4 +95,4 @@ This project has two independent version numbers:
 | `VERSION` in `plugin.py` | e.g., `v0.41.2` | The Azure/bicep language server release being bundled |
 | Git tag / GitHub release | e.g., `v2.0.1`  | The LSP-Bicep plugin release for Package Control      |
 
-Renovate manages the first. You manage the second.
+Renovate manages the first. The release workflow manages the second.
