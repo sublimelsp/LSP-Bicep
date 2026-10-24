@@ -4,9 +4,8 @@
 
 [Renovate](https://docs.renovatebot.com/) monitors the
 [Azure/bicep](https://github.com/Azure/bicep) GitHub releases and opens a PR
-when a new version is available, once it's 3 days old. The PR updates the
-`VERSION` variable in `plugin.py`, which controls which language server binary
-the plugin downloads.
+when a new version is available. The PR updates the `VERSION` variable in
+`plugin.py`, which controls which language server binary the plugin downloads.
 
 Renovate automerges patch updates once the smoke test passes. Bicep is still
 0.x, so minor updates (e.g., v0.41.2 -> v0.42.0) need a manual merge.
