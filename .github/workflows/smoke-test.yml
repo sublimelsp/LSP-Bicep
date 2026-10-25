@@ -26,7 +26,7 @@ jobs:
       - uses: sublimelsp/lsp_smoke_test@v1
         with:
           # Provides the Bicep syntax that the server is enabled for.
-          extra-packages: Bicep:rwols/sublime-bicep@v
+          extra-packages: Bicep
 
   # A single check whose name doesn't depend on the os matrix, for rulesets to require. It runs even when the workflow
   # is cancelled: a skipped job counts as passing for a required check.
