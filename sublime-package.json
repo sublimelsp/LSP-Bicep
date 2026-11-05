@@ -1,0 +1,56 @@
+{
+  "contributions": {
+    "settings": [
+      {
+        "file_patterns": [
+          "/LSP-Bicep.sublime-settings"
+        ],
+        "schema": {
+          "$id": "sublime://settings/LSP-Bicep",
+          "allOf": [
+            {
+              "$ref": "sublime://settings/LSP-plugin-base"
+            },
+            {
+              "$ref": "sublime://settings/LSP-Bicep#/definitions/PluginConfig"
+            }
+          ],
+          "definitions": {
+            "PluginConfig": {
+              "properties": {
+                "dotnet_executable": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "markdownDescription": "Path to the `dotnet` executable (v10 or newer). Leave at `null` to use `dotnet` from `$PATH`."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "file_patterns": [
+          "/*.sublime-project"
+        ],
+        "schema": {
+          "properties": {
+            "settings": {
+              "properties": {
+                "LSP": {
+                  "properties": {
+                    "LSP-Bicep": {
+                      "$ref": "sublime://settings/LSP-Bicep#/definitions/PluginConfig"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
