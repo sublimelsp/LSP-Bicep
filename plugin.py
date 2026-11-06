@@ -12,7 +12,7 @@ import re
 import shutil
 import subprocess
 
-VERSION = "v0.48.1"
+VERSION = "v0.49.2"
 URL = "https://github.com/Azure/bicep/releases/download/{0}/bicep-langserver.zip"
 DOTNET_MIN_MAJOR = 10
 
