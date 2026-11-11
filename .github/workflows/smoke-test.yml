@@ -21,7 +21,7 @@ jobs:
       # The language server needs the .NET 10 runtime.
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.x'
+          dotnet-version: '11.x'
 
       - uses: sublimelsp/lsp_smoke_test@v1
         with:
