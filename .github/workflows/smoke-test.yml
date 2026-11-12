@@ -9,19 +9,20 @@ on:
 
 jobs:
   smoke:
-    name: Smoke test (${{ matrix.os }})
+    name: Smoke test (${{ matrix.os }}, .NET ${{ matrix.dotnet }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        # The language server needs the .NET 10 runtime or newer.
+        dotnet: ['10.x', '11.x']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
 
-      # The language server needs the .NET 10 runtime.
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '11.x'
+          dotnet-version: ${{ matrix.dotnet }}
 
       - uses: sublimelsp/lsp_smoke_test@v1
         with:
